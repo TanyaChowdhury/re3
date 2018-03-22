@@ -17,8 +17,7 @@ def clip_bbox(bboxes, minClip, maxXClip, maxYClip):
     return bboxesOut
 
 # [x1 y1, x2, y2] to [xMid, yMid, width, height]
-def xyxy_to_xywh(bboxes, clipMin=-LIMIT, clipWidth=LIMIT, clipHeight=LIMIT,
-        round=False):
+def xyxy_to_xywh(bboxes, clipMin=-LIMIT, clipWidth=LIMIT, clipHeight=LIMIT, round=False):
     addedAxis = False
     if isinstance(bboxes, list):
         bboxes = np.array(bboxes).astype(np.float32)
@@ -75,9 +74,7 @@ def xywh_to_xyxy(bboxes, clipMin=-LIMIT, clipWidth=LIMIT, clipHeight=LIMIT,
 # @bboxes {np.array} 4xn array of boxes to be scaled
 # @scalars{number or arraylike} scalars for width and height of boxes
 # @in_place{bool} If false, creates new bboxes.
-def scale_bbox(bboxes, scalars,
-        clipMin=-LIMIT, clipWidth=LIMIT, clipHeight=LIMIT,
-        round=False, in_place=False):
+def scale_bbox(bboxes, scalars,clipMin=-LIMIT, clipWidth=LIMIT, clipHeight=LIMIT,round=False, in_place=False):
     addedAxis = False
     if isinstance(bboxes, list):
         bboxes = np.array(bboxes, dtype=np.float32)
@@ -141,12 +138,8 @@ def make_square(bboxes, in_place=False):
 # @crop_padding the amount to pad the crop_location box (1 would be keep it the same, 2 would be doubled)
 # @crop_size the maximum size of the coordinate frame of bbox_to_change.
 def to_crop_coordinate_system(bbox_to_change, crop_location, crop_padding, crop_size):
-    if isinstance(bbox_to_change, list):
-        bbox_to_change = np.array(bbox_to_change)
-    if isinstance(crop_location, list):
-        crop_location = np.array(crop_location)
-    bbox_to_change = bbox_to_change.astype(np.float32)
-    crop_location = crop_location.astype(np.float32)
+    crop_location = np.array(crop_location,dtype = np.float32)
+    bbox_to_change = np.array(bbox_to_change,dtype=np.float32)
 
     crop_location = scale_bbox(crop_location, crop_padding)
     crop_location_xywh = xyxy_to_xywh(crop_location)
@@ -158,12 +151,8 @@ def to_crop_coordinate_system(bbox_to_change, crop_location, crop_padding, crop_
 # Inverts the transformation from to_crop_coordinate_system
 # @crop_size the maximum size of the coordinate frame of bbox_to_change.
 def from_crop_coordinate_system(bbox_to_change, crop_location, crop_padding, crop_size):
-    if isinstance(bbox_to_change, list):
-        bbox_to_change = np.array(bbox_to_change)
-    if isinstance(crop_location, list):
-        crop_location = np.array(crop_location)
-    bbox_to_change = bbox_to_change.astype(np.float32)
-    crop_location = crop_location.astype(np.float32)
+    crop_location = np.array(crop_location,dtype = np.float32)
+    bbox_to_change = np.array(bbox_to_change,dtype=np.float32)
 
     crop_location = scale_bbox(crop_location, crop_padding)
     crop_location_xywh = xyxy_to_xywh(crop_location)
