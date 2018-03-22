@@ -3,73 +3,44 @@ import numbers
 
 LIMIT = 99999999
 
-# BBoxes are [x1, y1, x2, y2]
-def clip_bbox(bboxes, minClip, maxXClip, maxYClip):
-    bboxesOut = bboxes
-    addedAxis = False
-    if len(bboxesOut.shape) == 1:
-        addedAxis = True
-        bboxesOut = bboxesOut[:,np.newaxis]
-    bboxesOut[[0,2],...] = np.clip(bboxesOut[[0,2],...], minClip, maxXClip)
-    bboxesOut[[1,3],...] = np.clip(bboxesOut[[1,3],...], minClip, maxYClip)
-    if addedAxis:
-        bboxesOut = bboxesOut[:,0]
-    return bboxesOut
 
 # [x1 y1, x2, y2] to [xMid, yMid, width, height]
 def xyxy_to_xywh(bboxes, clipMin=-LIMIT, clipWidth=LIMIT, clipHeight=LIMIT, round=False):
-    addedAxis = False
-    if isinstance(bboxes, list):
-        bboxes = np.array(bboxes).astype(np.float32)
-    if len(bboxes.shape) == 1:
-        addedAxis = True
-        bboxes = bboxes[:,np.newaxis]
-    bboxesOut = np.zeros(bboxes.shape)
-    x1 = bboxes[0,...]
-    y1 = bboxes[1,...]
-    x2 = bboxes[2,...]
-    y2 = bboxes[3,...]
-    bboxesOut[0,...] = (x1 + x2) / 2.0
-    bboxesOut[1,...] = (y1 + y2) / 2.0
-    bboxesOut[2,...] = x2 - x1
-    bboxesOut[3,...] = y2 - y1
-    if clipMin != -LIMIT or clipWidth != LIMIT or clipHeight != LIMIT:
-        bboxesOut = clip_bbox(bboxesOut, clipMin, clipWidth, clipHeight)
-    if bboxesOut.shape[0] > 4:
-        bboxesOut[4:,...] = bboxes[4:,...]
-    if addedAxis:
-        bboxesOut = bboxesOut[:,0]
-    if round:
-        bboxesOut = np.round(bboxesOut).astype(int)
-    return bboxesOut
+    tbox = np.copy(bboxes)
+    tbox = tbox.reshape((1,4))
+
+    obox = numpy.zeros((1,4))
+    obox[0] = 1.0 *(tbox[0] + tbox[2] )/2
+    obox[1] = 1.0 *(tbox[1] + tbox[3] )/2
+    obox[2] = 1.0 *(tbox[2] - tbox[0])
+    obox[3] = 1.0 *(tbox[3] - tbox[1])
+
+    for i in range(0,4):
+        if obox[i] > LIMIT : 
+            obox[i] = LIMIT
+        if obox[i] < -LIMIT :
+            obox[i] = -LIMIT
+
+    return np.round(obox).astype(int)
 
 # [xMid, yMid, width, height] to [x1 y1, x2, y2]
-def xywh_to_xyxy(bboxes, clipMin=-LIMIT, clipWidth=LIMIT, clipHeight=LIMIT,
-        round=False):
-    addedAxis = False
-    if isinstance(bboxes, list):
-        bboxes = np.array(bboxes).astype(np.float32)
-    if len(bboxes.shape) == 1:
-        addedAxis = True
-        bboxes = bboxes[:,np.newaxis]
-    bboxesOut = np.zeros(bboxes.shape)
-    xMid = bboxes[0,...]
-    yMid = bboxes[1,...]
-    width = bboxes[2,...]
-    height = bboxes[3,...]
-    bboxesOut[0,...] = xMid - width / 2.0
-    bboxesOut[1,...] = yMid - height / 2.0
-    bboxesOut[2,...] = xMid + width / 2.0
-    bboxesOut[3,...] = yMid + height / 2.0
-    if clipMin != -LIMIT or clipWidth != LIMIT or clipHeight != LIMIT:
-        bboxesOut = clip_bbox(bboxesOut, clipMin, clipWidth, clipHeight)
-    if bboxesOut.shape[0] > 4:
-        bboxesOut[4:,...] = bboxes[4:,...]
-    if addedAxis:
-        bboxesOut = bboxesOut[:,0]
-    if round:
-        bboxesOut = np.round(bboxesOut).astype(int)
-    return bboxesOut
+def xywh_to_xyxy(bboxes, clipMin=-LIMIT, clipWidth=LIMIT, clipHeight=LIMIT, round=False):
+    tbox = np.copy(bboxes)
+    tbox = tbox.reshape((1,4))
+
+    obox = numpy.zeros((1,4))
+    obox[0] = 1.0 *(tbox[0] - tbox[2] )/2
+    obox[1] = 1.0 *(tbox[1] - tbox[3] )/2
+    obox[2] = 1.0 *(tbox[2] + tbox[0])/2
+    obox[3] = 1.0 *(tbox[3] + tbox[1])/2
+
+    for i in range(0,4):
+        if obox[i] > LIMIT : 
+            obox[i] = LIMIT
+        if obox[i] < -LIMIT :
+            obox[i] = -LIMIT
+
+    return np.round(obox).astype(int)
 
 # @bboxes {np.array} 4xn array of boxes to be scaled
 # @scalars{number or arraylike} scalars for width and height of boxes
